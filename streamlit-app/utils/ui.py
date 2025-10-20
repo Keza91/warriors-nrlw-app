@@ -33,7 +33,8 @@ section.main > div:first-child {{
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: clamp(0.75rem, 4vw, 2.5rem);
+    gap: clamp(0.5rem, 3vw, 1.5rem);
+    flex-wrap: nowrap;
     margin: clamp(1rem, 4vw, 2.5rem) auto;
     max-width: min(var(--page-max-width), 100%);
 }}
@@ -43,11 +44,12 @@ section.main > div:first-child {{
     display: flex;
     align-items: center;
     justify-content: center;
-    min-width: clamp(45px, 10vw, 90px);
+    min-width: clamp(36px, 9vw, 72px);
 }}
 
 .responsive-header .header-logo {{
-    width: clamp(45px, 10vw, 90px);
+    width: clamp(36px, 9vw, 72px);
+    max-height: clamp(36px, 9vw, 72px);
     height: auto;
     object-fit: contain;
 }}
@@ -56,7 +58,7 @@ section.main > div:first-child {{
     flex: 1 1 auto;
     margin: 0;
     text-align: center;
-    font-size: clamp(1.4rem, 3vw, 2.6rem);
+    font-size: clamp(1.2rem, 2.5vw, 2.2rem);
     color: #262C68;
 }}
 
@@ -110,15 +112,16 @@ section.main > div:first-child {{
     }}
 
     .responsive-header .header-logo-wrap {{
-        min-width: clamp(40px, 16vw, 70px);
+        min-width: clamp(32px, 14vw, 60px);
     }}
 
     .responsive-header .header-logo {{
-        width: clamp(40px, 16vw, 70px);
+        width: clamp(32px, 14vw, 60px);
+    max-height: clamp(32px, 14vw, 60px);
     }}
 
     .responsive-header .header-title {{
-        font-size: clamp(1.2rem, 5vw, 1.6rem);
+        font-size: clamp(1.1rem, 4vw, 1.6rem);
     }}
 
     input[type="number"], select, textarea {{

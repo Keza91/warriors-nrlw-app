@@ -1,10 +1,3 @@
-# app_team_planner_dual_anchor.py — Trial Version
-# - Step 2 now uses % targets (Max Speed, Total Distance, N/m) relative to exemplar
-# - Tooltips added to Step 2 inputs
-# - Exemplar row fully italicized
-# - Includes Aerobic (m) metric
-# - Renames High Speed Running → HSR for display
-
 import pandas as pd
 import numpy as np
 import streamlit as st
@@ -12,6 +5,7 @@ import gspread
 from google.oauth2.service_account import Credentials
 import statsmodels.api as sm
 from utils.positions import apply_position_overrides
+from utils.ui import inject_responsive_layout, render_page_header
 
 def get_gsheet_client():
     key = "_gsheet_client"
@@ -114,7 +108,7 @@ EXPORT_COLUMN_MAP = {
 with st.sidebar:
     # Place logo at the top with centered alignment
     st.markdown("<div style='text-align:center; margin-top:-10px; margin-bottom:15px;'>", unsafe_allow_html=True)
-    st.logo("Wahs.png", size="large")
+    st.logo("Wahs.png", size="small")
     st.sidebar.image("OneNZ.png", use_container_width=True)
     st.markdown("</div>", unsafe_allow_html=True)
   #  st.logo(link="https://upload.wikimedia.org/wikipedia/en/thumb/5/5b/Warriors_%28NRL%29_Logo.svg/1200px-Warriors_%28NRL%29_Logo.svg.png",size="large")
@@ -124,6 +118,8 @@ with st.sidebar:
 # =========================
 
 st.set_page_config(page_title="Team Planner", layout="wide")
+
+inject_responsive_layout()
 
 # TABLE BOARDERS # 
 st.markdown("""
@@ -181,11 +177,6 @@ div[data-testid="stMarkdownContainer"] table {
 st.markdown("""
 <style>
 /* Align Season Set Up page with others */
-.block-container {
-    padding-top: 3rem !important;
-    max-width: 1180px;
-    margin: auto;
-}
 h1, h2, h3 {
     text-align: center;
     margin-top: 0.5rem;
@@ -195,17 +186,7 @@ h1, h2, h3 {
 """, unsafe_allow_html=True)
 
 # ---------- Header Layout ----------
-col1, col2, col3 = st.columns([0.5, 4, 0.5])
-with col1:
-    st.image("Wahs.png", width=85)
-with col2:
-    st.markdown(
-        "<h1 style='text-align:center; color:#262C68;'>Team Planner</h1>",
-        unsafe_allow_html=True
-    )
-with col3:
-    st.image("NRLW Logo.png", width=85)
-
+render_page_header("Team Planner", "Wahs.png", "NRLW Logo.png", heading="h1")
 
 st.markdown("---")
 
@@ -233,6 +214,7 @@ with left:
         options=["Typical (P50)", "High-Day (P75)"],
         index=1
     )
+
 with mid:
     chosen_venue = st.selectbox("Venue", options=["All"] + sorted(df[COLS["venue"]].dropna().unique()), index=0)
 with right:
@@ -474,4 +456,3 @@ if processed_template is not None:
                 file_name="team_session_targets_updated.csv",
                 mime="text/csv"
             )
-

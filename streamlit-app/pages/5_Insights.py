@@ -1,10 +1,3 @@
-# ============================================================
-# 5_Insights.py â€” In-season Context & Winning vs Losing Insights
-# - Mirrors content moved from Season Set Up for modular clarity
-# - Preserves Context Snapshot and Winning Insights tooltips
-# - Equal fixed widths for tables and row colouring by win rate
-# ============================================================
-
 import json
 from datetime import date, datetime
 from pathlib import Path
@@ -16,6 +9,7 @@ import streamlit as st
 from google.oauth2.service_account import Credentials
 
 from utils.positions import apply_position_overrides
+from utils.ui import inject_responsive_layout, render_page_header
 
 # =========================
 # SIDEBAR LOGO 
@@ -23,12 +17,14 @@ from utils.positions import apply_position_overrides
 with st.sidebar:
     # Place logo at the top with centered alignment
     st.markdown("<div style='text-align:center; margin-top:-10px; margin-bottom:15px;'>", unsafe_allow_html=True)
-    st.logo("Wahs.png", size="large")
+    st.logo("Wahs.png", size="small")
     st.sidebar.image("OneNZ.png", use_container_width=True)
     st.markdown("</div>", unsafe_allow_html=True)
     
 # ---------------------- PAGE CONFIG ----------------------
 st.set_page_config(page_title="Insights", layout="wide")
+
+inject_responsive_layout()
 
 # TABLE BOARDERS # 
 st.markdown("""
@@ -82,11 +78,10 @@ div[data-testid="stMarkdownContainer"] table {
 # TITLE #
 st.markdown("""
 <style>
-
 .block-container {
-    padding-top: 3rem !important;
-    max-width: 1180px;
-    margin: auto;
+    padding-top: clamp(2rem, 4vw, 3rem) !important;
+    max-width: min(1180px, 100%) !important;
+    margin: 0 auto;
 }
 h1, h2, h3 {
     text-align: center;
@@ -97,18 +92,7 @@ h1, h2, h3 {
 """, unsafe_allow_html=True)
 
 # ---------- Header Layout ----------
-col1, col2, col3 = st.columns([0.5, 4, 0.5])
-with col1:
-    st.image("Wahs.png", width=85)
-with col2:
-    st.markdown(
-        "<h1 style='text-align:center; color:#262C68;'>Insights</h1>",
-        unsafe_allow_html=True
-    )
-with col3:
-    st.image("NRLW Logo.png", width=85)
-
-
+render_page_header("Insights", "Wahs.png", "NRLW Logo.png", heading="h1")
 
 st.markdown("---")
 def get_gsheet_client():
@@ -391,10 +375,10 @@ def apply_row_colours_by_winrate(html: str, winrate_map: dict, suppress: bool) -
 st.markdown("### In-Season Intelligence")
 st.caption("Grouped load profiles, Δ% differences, and actionable winning vs losing insights derived from match-linked training data.")
 
-col1, col2 = st.columns([1, 1])
-with col1:
+filter_col1, filter_col2, filter_col3 = st.columns([1, 1, 2])
+with filter_col1:
     group_by = st.selectbox("Group by:", ["Venue", "Opposition", "Opposition Seed"])
-with col2:
+with filter_col2:
     include_losses = st.checkbox("Include losses", value=False)
 
 raw_positions_df = load_sheet_df()
@@ -408,11 +392,12 @@ if position_series is not None:
 else:
     pos_options = []
 
-if pos_options:
-    selected_positions = st.multiselect("Include positions", pos_options, default=pos_options, help="Choose the positions to include in all calculations.")
-else:
-    selected_positions = []
-    st.info("No position data found; defaulting to all records.")
+with filter_col3:
+    if pos_options:
+        selected_positions = st.multiselect("Include positions", pos_options, default=pos_options, help="Choose the positions to include in all calculations.")
+    else:
+        selected_positions = []
+        st.info("No position data found; defaulting to all records.")
 
 @st.cache_data(ttl=1800)
 def build_context_data(group_by, include_losses, positions_filter):
@@ -586,82 +571,129 @@ Shows real values (m, min, N/m) to illustrate what winning weeks look like.
 """)
 
     if win_means is not None and loss_means is not None and not win_means.empty and not loss_means.empty:
-        styled_lines = []
         metrics_label_units = WINNING_METRIC_LABELS
-        common_days = win_means.index.intersection(loss_means.index)
-        day_order = [*TRAINING_DAY_CANON, "Match"]
-        for day in day_order:
-            if day not in common_days:
-                continue
-            display_day = day.replace(" (Captain's Run)", "")
+        allowed_days = TRAINING_DAY_CANON
+        common_days = [day for day in allowed_days if day in win_means.index and day in loss_means.index]
+
+        metrics_by_day = {}
+        select_label_map = {}
+        for day in common_days:
+            entries = []
+            display_day = day
+            short_label = day.split(" ")[0]
+            select_label_map[day] = short_label
+
             for m_key, (label, unit) in metrics_label_units.items():
                 if m_key not in win_means.columns or m_key not in loss_means.columns:
                     continue
                 wv = win_means.at[day, m_key]
                 lv = loss_means.at[day, m_key]
+                if pd.isna(wv) or pd.isna(lv) or lv == 0:
+                    continue
+
                 win_margin = None
                 loss_margin = None
                 if win_std is not None and not win_std.empty and day in win_std.index and m_key in win_std.columns:
                     win_margin = win_std.at[day, m_key]
                 if loss_std is not None and not loss_std.empty and day in loss_std.index and m_key in loss_std.columns:
                     loss_margin = loss_std.at[day, m_key]
-                if pd.notna(wv) and pd.notna(lv) and lv != 0:
-                    diff_pct = ((wv - lv) / lv) * 100.0
-                    if abs(diff_pct) >= 10:
-                        if unit == "m":
-                            w_disp = f"{wv:.0f}"
-                            l_disp = f"{lv:.0f}"
-                            w_margin_disp = f"{win_margin:.0f}" if win_margin is not None and pd.notna(win_margin) else None
-                            l_margin_disp = f"{loss_margin:.0f}" if loss_margin is not None and pd.notna(loss_margin) else None
-                        elif unit == "N/m":
-                            w_disp = f"{wv:.1f}"
-                            l_disp = f"{lv:.1f}"
-                            w_margin_disp = f"{win_margin:.1f}" if win_margin is not None and pd.notna(win_margin) else None
-                            l_margin_disp = f"{loss_margin:.1f}" if loss_margin is not None and pd.notna(loss_margin) else None
-                        else:
-                            w_disp = f"{wv:.1f}"
-                            l_disp = f"{lv:.1f}"
-                            if unit == "min":
-                                w_margin_disp = f"{win_margin:.0f}" if win_margin is not None and pd.notna(win_margin) else None
-                                l_margin_disp = f"{loss_margin:.0f}" if loss_margin is not None and pd.notna(loss_margin) else None
-                            else:
-                                w_margin_disp = f"{win_margin:.1f}" if win_margin is not None and pd.notna(win_margin) else None
-                                l_margin_disp = f"{loss_margin:.1f}" if loss_margin is not None and pd.notna(loss_margin) else None
-                        direction = "higher" if diff_pct > 0 else "lower"
-                        win_text = f"{w_disp}{unit}" if unit else w_disp
-                        loss_text = f"{l_disp}{unit}" if unit else l_disp
-                        if w_margin_disp is not None:
-                            margin_text = f"{w_margin_disp}{unit}" if unit else w_margin_disp
-                            win_text = f"{win_text} (&plusmn;{margin_text})"
-                        if l_margin_disp is not None:
-                            margin_text = f"{l_margin_disp}{unit}" if unit else l_margin_disp
-                            loss_text = f"{loss_text} (&plusmn;{margin_text})"
-                        win_span = f"<span class='win-pill'>{win_text}</span>"
-                        loss_span = f"<span class='loss-pill'>{loss_text}</span>"
-                        change_phrase = "higher in winning weeks" if diff_pct > 0 else "lower in losing weeks"
-                        styled_lines.append(
-                            f"<li><strong>{display_day} {label}:</strong> {win_span} vs {loss_span} = {abs(diff_pct):.1f}% {change_phrase}</li>"
-                        )
-        if styled_lines:
-            insight_html = "<div class='insight-box'><ul>" + "".join(styled_lines) + "</ul></div>"
-            st.markdown(insight_html, unsafe_allow_html=True)
-            
-        else:
-            st.info("Insufficient linked data to generate insights.")
 
+                diff_pct = ((wv - lv) / lv) * 100.0
+                if abs(diff_pct) < 10:
+                    continue
+
+                if unit == "m":
+                    w_disp = f"{wv:.0f}"
+                    l_disp = f"{lv:.0f}"
+                    w_margin_disp = f"{win_margin:.0f}" if win_margin is not None and pd.notna(win_margin) else None
+                    l_margin_disp = f"{loss_margin:.0f}" if loss_margin is not None and pd.notna(loss_margin) else None
+                elif unit == "N/m":
+                    w_disp = f"{wv:.1f}"
+                    l_disp = f"{lv:.1f}"
+                    w_margin_disp = f"{win_margin:.1f}" if win_margin is not None and pd.notna(win_margin) else None
+                    l_margin_disp = f"{loss_margin:.1f}" if loss_margin is not None and pd.notna(loss_margin) else None
+                else:
+                    w_disp = f"{wv:.1f}"
+                    l_disp = f"{lv:.1f}"
+                    if unit == "min":
+                        w_margin_disp = f"{win_margin:.0f}" if win_margin is not None and pd.notna(win_margin) else None
+                        l_margin_disp = f"{loss_margin:.0f}" if loss_margin is not None and pd.notna(loss_margin) else None
+                    else:
+                        w_margin_disp = f"{win_margin:.1f}" if win_margin is not None and pd.notna(win_margin) else None
+                        l_margin_disp = f"{loss_margin:.1f}" if loss_margin is not None and pd.notna(loss_margin) else None
+
+                win_text = f"{w_disp}{unit}" if unit else w_disp
+                loss_text = f"{l_disp}{unit}" if unit else l_disp
+                if w_margin_disp is not None:
+                    margin_text = f"{w_margin_disp}{unit}" if unit else w_margin_disp
+                    win_text = f"{win_text} (±{margin_text})"
+                if l_margin_disp is not None:
+                    margin_text = f"{l_margin_disp}{unit}" if unit else l_margin_disp
+                    loss_text = f"{loss_text} (±{margin_text})"
+
+                win_text = win_text.replace('&plusmn;', '±')
+                loss_text = loss_text.replace('&plusmn;', '±')
+
+                entries.append({
+                    "label": label,
+                    "win_text": win_text,
+                    "loss_text": loss_text,
+                    "diff_pct": diff_pct,
+                })
+
+            if entries:
+                metrics_by_day[day] = {
+                    "display": display_day,
+                    "entries": entries,
+                }
+
+        if not metrics_by_day:
+            st.info("Insufficient linked data to generate insights.")
+        else:
+            select_options = ["All Days"] + [select_label_map[day] for day in metrics_by_day.keys()]
+            day_select_col, _ = st.columns([1, 3])
+            with day_select_col:
+                day_selection = st.selectbox("Select Day", select_options, key="insights_day_select")
+
+            if day_selection == "All Days":
+                days_to_render = list(metrics_by_day.keys())
+            else:
+                reverse_map = {v: k for k, v in select_label_map.items()}
+                selected_day = reverse_map.get(day_selection)
+                if not selected_day:
+                    st.info("No metrics available for the selected day.")
+                    days_to_render = []
+                else:
+                    days_to_render = [selected_day]
+
+            for day in days_to_render:
+                info = metrics_by_day.get(day)
+                if not info:
+                    continue
+                display_day = "D5 (Captain's Run)" if "Captain" in info["display"] else info["display"]
+                st.markdown(f"**{display_day}**")
+
+                entries = info["entries"]
+                if not entries:
+                    st.caption("No metrics cleared the display threshold for this day.")
+                    continue
+
+                columns = None
+                for idx, entry in enumerate(entries):
+                    if idx % 3 == 0:
+                        columns = st.columns(3)
+                    col = columns[idx % 3]
+                    delta_value = entry["diff_pct"]
+                    with col:
+                        col.metric(
+                            label=entry["label"],
+                            value=entry["win_text"],
+                            delta=f"{delta_value:+.1f}%"
+                        )
+                        col.caption(f"Loss: {entry['loss_text']}")
+
+                st.markdown("")
     else:
         st.info("Insufficient linked training-week data to compare winning vs losing weeks.")
 else:
     st.info("No data available for the selected filters.")
-
-
-
-
-
-
-
-
-
-
-
-

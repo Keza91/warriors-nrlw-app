@@ -1,13 +1,3 @@
-# ============================================================
-# 4_Season_Set_Up.py — Context Intelligence + Week Linkage
-# - Equal fixed widths for Context & Difference tables
-# - Δ% values at 1 decimal with % sign (no +)
-# - Row colour in Δ% table: Green = Won, Red = Loss (suppressed for Venue)
-# - Winning vs Losing Week Insights (real values with units; per-session, day-level, weekly contribution)
-# - Google Sheet only (no CSV dependency)
-# - Added help= tooltips for Context Snapshot and Winning Insights
-# ============================================================
-
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -16,6 +6,7 @@ from pathlib import Path
 from google.oauth2.service_account import Credentials
 import gspread
 from collections import Counter
+from utils.ui import inject_responsive_layout, render_page_header
 
 # =========================
 # SIDEBAR LOGO 
@@ -29,6 +20,8 @@ with st.sidebar:
 
 # ---------------------- PAGE CONFIG ----------------------
 st.set_page_config(page_title="Season Set Up", layout="wide")
+
+inject_responsive_layout()
 
 # TABLE BOARDERS # 
 st.markdown("""
@@ -86,11 +79,10 @@ div[data-testid="stMarkdownContainer"] table {
 # TITLE #
 st.markdown("""
 <style>
-
 .block-container {
-    padding-top: 3rem !important;
-    max-width: 1180px;
-    margin: auto;
+    padding-top: clamp(2rem, 4vw, 3rem) !important;
+    max-width: min(1180px, 100%) !important;
+    margin: 0 auto;
 }
 h1, h2, h3 {
     text-align: center;
@@ -101,16 +93,7 @@ h1, h2, h3 {
 """, unsafe_allow_html=True)
 
 # ---------- Header Layout ----------
-col1, col2, col3 = st.columns([0.5, 4, 0.5])
-with col1:
-    st.image("Wahs.png", width=85)
-with col2:
-    st.markdown(
-        "<h1 style='text-align:center; color:#262C68;'>Season Set Up</h1>",
-        unsafe_allow_html=True
-    )
-with col3:
-    st.image("NRLW Logo.png", width=85)
+render_page_header("Season Set Up", "Wahs.png", "NRLW Logo.png", heading="h1")
 
 st.markdown("---")
 def get_gsheet_client():
@@ -361,5 +344,3 @@ st.session_state.season_df = edited.copy()
 if st.button("Save Plan", use_container_width=True):
     st.session_state.season_df.to_csv(PLAN_CSV, index=False)
     st.success("Season plan saved.")
-
-

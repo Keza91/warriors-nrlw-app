@@ -3,6 +3,7 @@ import numpy as np
 import streamlit as st
 import gspread
 from google.oauth2.service_account import Credentials
+from utils.ui import inject_responsive_layout, render_page_header
 
 def get_gsheet_client():
     key = "_gsheet_client"
@@ -99,7 +100,7 @@ WEEK_DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 # =========================
 with st.sidebar:
     st.markdown("<div style='text-align:center; margin-top:-10px; margin-bottom:15px;'>", unsafe_allow_html=True)
-    st.logo("Wahs.png", size="large")
+    st.logo("Wahs.png", size="small")
     st.sidebar.image("OneNZ.png", use_container_width=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -107,6 +108,8 @@ with st.sidebar:
 # PAGE CONFIG + STYLE
 # =========================
 st.set_page_config(page_title="Practice Planner", layout="wide")
+
+inject_responsive_layout()
 
 st.markdown("""
 <style>
@@ -140,10 +143,8 @@ div[data-testid="stMarkdownContainer"] table {
 """, unsafe_allow_html=True)
 
 # ---------- Header ----------
-col1, col2, col3 = st.columns([0.5, 4, 0.5])
-with col1: st.image("Wahs.png", width=85)
-with col2: st.markdown("<h1 style='text-align:center; color:#262C68;'>Practice Planner</h1>", unsafe_allow_html=True)
-with col3: st.image("NRLW Logo.png", width=85)
+render_page_header("Practice Planner", "Wahs.png", "NRLW Logo.png", heading="h1")
+
 st.markdown("---")
 
 # ============================================================
@@ -348,7 +349,9 @@ if not positions:
     st.stop()
 
 pos_index = positions.index("Centre") if "Centre" in positions else 0
-selected_pos = st.selectbox("Select position", positions, index=pos_index)
+pos_select_col, _ = st.columns([1, 3])
+with pos_select_col:
+    selected_pos = st.selectbox("Select position", positions, index=pos_index)
 
 rows = []
 for metric in ALL_METRICS:
@@ -430,4 +433,3 @@ else:
             display_off_cols.append(col)
     render_html_table(table_df, off_cols=display_off_cols)
     st.caption("Each metric distributes the exemplar total across the selected structure, then scales by the chosen position's ratio. Day percentages always sum to 100%.")
-

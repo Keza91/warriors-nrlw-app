@@ -5,6 +5,7 @@ import gspread
 from google.oauth2.service_account import Credentials
 import statsmodels.api as sm
 from utils.positions import apply_position_overrides
+from utils.ui import inject_responsive_layout, render_page_header
 
 def get_gsheet_client():
     key = "_gsheet_client"
@@ -75,6 +76,15 @@ METRIC_TO_COL = {
     "Decel Distance": COLS["decel_dist"],
 }
 
+PRIORITY = {
+    "High Speed Running": 0.3,
+    "VHSR": 0.6,
+    "Accel Efforts": 1.0,
+    "Accel Distance": 0.9,
+    "Decel Efforts": 1.25,
+    "Decel Distance": 1.1
+}
+
 MINUTES_FILTER = 35
 
 # =========================
@@ -82,10 +92,12 @@ MINUTES_FILTER = 35
 # =========================
 with st.sidebar:
     st.markdown("<div style='text-align:center; margin-top:-10px; margin-bottom:15px;'>", unsafe_allow_html=True)
-    st.logo("Wahs.png", size="large")
+    st.logo("Wahs.png", size="small")
     st.sidebar.image("OneNZ.png", use_container_width=True)
     st.markdown("</div>", unsafe_allow_html=True)
     
+inject_responsive_layout()
+
 # =========================
 # PAGE STYLE
 # =========================
@@ -130,7 +142,7 @@ div[data-testid="stMarkdownContainer"] table {
 /* Wider column spacing */
 table th, table td {
     padding: 10px 20px;
-    min-width: 160px;
+    min-width: 120px;
     text-align: center;
     vertical-align: middle;
     white-space: nowrap;
@@ -142,9 +154,9 @@ table th, table td {
 st.markdown("""
 <style>
 .block-container {
-    padding-top: 3rem !important;
-    max-width: 1180px;
-    margin: auto;
+    padding-top: clamp(2rem, 4vw, 3rem) !important;
+    max-width: min(1180px, 100%) !important;
+    margin: 0 auto;
 }
 h1, h2, h3 {
     text-align: center;
@@ -155,13 +167,7 @@ h1, h2, h3 {
 """, unsafe_allow_html=True)
 
 # ---------- Header Layout ----------
-col1, col2, col3 = st.columns([0.5, 4, 0.5])
-with col1:
-    st.image("Wahs.png", width=85)
-with col2:
-    st.markdown("<h1 style='text-align:center; color:#262C68;'>Positional Top Ups</h1>", unsafe_allow_html=True)
-with col3:
-    st.image("NRLW Logo.png", width=85)
+render_page_header("Positional Top Ups", "Wahs.png", "NRLW Logo.png", heading="h1")
 
 st.markdown("---")
 
@@ -208,13 +214,15 @@ if not slopes_by_position:
 
 # ---------- Step 1 ----------
 st.markdown('<div class="step-box">', unsafe_allow_html=True)
-st.markdown("### Step 1 · Choose Position")
+st.markdown("### Step 1 - Choose Position")
 
-position = st.selectbox(
-    "Position",
-    sorted(slopes_by_position.keys()),
-    help="Pick the player’s position. Each position has its own N/m per-unit slopes."
-)
+pos_select_col, _ = st.columns([1, 3])
+with pos_select_col:
+    position = st.selectbox(
+        "Position",
+        sorted(slopes_by_position.keys()),
+        help="Pick the player's position. Each position has its own N/m per-unit slopes."
+    )
 SLOPES = slopes_by_position[position]
 
 slopes_df = pd.DataFrame([SLOPES], index=[position])[METRICS].reset_index()
@@ -225,7 +233,7 @@ st.markdown("---")
 
 # ---------- Step 2 ----------
 st.markdown('<div class="step-box">', unsafe_allow_html=True)
-st.markdown("### Step 2 · Target & Inputs")
+st.markdown("### Step 2 - Target & Inputs")
 
 st.markdown('<div class="target-input-box">', unsafe_allow_html=True)
 target_nm = st.number_input(
@@ -242,7 +250,7 @@ default_weights = {m: round(pos_slopes[m] / sum_pos, 2) for m in METRICS} if sum
 
 st.markdown("#### Weights & Current Metrics")
 
-cols = st.columns([3, 2, 2])
+cols = st.columns([2, 1, 1])
 with cols[0]:
     st.markdown("**Metric**")
 with cols[1]:
@@ -252,7 +260,7 @@ with cols[2]:
 
 weight_inputs, current_inputs = {}, {}
 for m in METRICS:
-    c = st.columns([3, 2, 2])
+    c = st.columns([2, 1, 1])
     with c[0]:
         st.markdown(m)
     with c[1]:
@@ -270,7 +278,7 @@ st.markdown("---")
 
 # ---------- Step 3 ----------
 st.markdown('<div class="step-box">', unsafe_allow_html=True)
-st.markdown("### Step 3 · Results")
+st.markdown("### Step 3 - Results")
 
 selected_metrics = st.multiselect(
     "Select metrics to use for top-up",
@@ -286,11 +294,15 @@ valid_metrics = [m for m in selected_metrics if SLOPES[m] > 0]
 sum_w = sum(weight_inputs[m] for m in valid_metrics) if valid_metrics else 0.0
 alloc_weights = {m: (weight_inputs[m] / sum_w if sum_w > 0 else 0.0) for m in valid_metrics}
 
+MIN_SLOPE = 0.01  # or tweak (try 0.005 or 0.02)
+
+safe_slopes = {m: max(SLOPES[m], MIN_SLOPE) for m in METRICS}
+
 top_up = {m: 0.0 for m in METRICS}
 if need > 0 and valid_metrics:
     for m in valid_metrics:
         nm_piece = need * alloc_weights[m]
-        top_up[m] = nm_piece / SLOPES[m]
+        top_up[m] = nm_piece / safe_slopes[m]
 
 rows = []
 for m in valid_metrics:
@@ -303,7 +315,7 @@ for m in valid_metrics:
     })
 results_df = pd.DataFrame(rows, columns=["Metric", "Current", "Top-Up Needed", "New Total", "N/m Gain from Top-Up"])
 
-c1, c2 = st.columns([3, 1])
+c1, c2 = st.columns([2, 1])
 with c1:
     st.metric("Current Contribution", f"{current_contrib:.1f} N/m")
 with c2:

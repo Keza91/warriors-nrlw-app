@@ -5,7 +5,7 @@ st.set_page_config(page_title="Warriors NRLW Loading Tool", layout="centered")
 
 with st.sidebar:
     st.markdown("<div style='text-align:center; margin-top:-10px; margin-bottom:15px;'>", unsafe_allow_html=True)
-    st.logo("Wahs.png", size='small')
+    st.logo("Wahs.png", size="small")
     st.sidebar.image("OneNZ.png", use_container_width=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -74,6 +74,7 @@ Welcome! Use the sidebar to navigate:
 )
 
 st.markdown("---")
+
 
 
 

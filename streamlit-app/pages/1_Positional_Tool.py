@@ -336,3 +336,4 @@ else:
         st.info("These selected metrics have ≤ 0 slopes and were ignored: " + ", ".join(bad))
 
 st.markdown("</div>", unsafe_allow_html=True)
+

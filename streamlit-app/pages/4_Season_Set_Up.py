@@ -14,7 +14,7 @@ from utils.ui import inject_responsive_layout, render_page_header
 with st.sidebar:
     # Place logo at the top with centered alignment
     st.markdown("<div style='text-align:center; margin-top:-10px; margin-bottom:15px;'>", unsafe_allow_html=True)
-    st.logo("Wahs.png", size="large")
+    st.logo("Wahs.png", size="small")
     st.sidebar.image("OneNZ.png", use_container_width=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -344,3 +344,4 @@ st.session_state.season_df = edited.copy()
 if st.button("Save Plan", use_container_width=True):
     st.session_state.season_df.to_csv(PLAN_CSV, index=False)
     st.success("Season plan saved.")
+

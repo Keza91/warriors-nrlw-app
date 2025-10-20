@@ -33,6 +33,7 @@ section.main > div:first-child {{
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-wrap: nowrap;
     gap: clamp(0.5rem, 3vw, 1.5rem);
     flex-wrap: nowrap;
     margin: clamp(1rem, 4vw, 2.5rem) auto;
@@ -40,16 +41,18 @@ section.main > div:first-child {{
 }}
 
 .responsive-header .header-logo-wrap {{
-    flex: 0 0 auto;
+    flex: 0 0 clamp(36px, 9vw, 72px);
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-wrap: nowrap;
     min-width: clamp(36px, 9vw, 72px);
 }}
 
 .responsive-header .header-logo {{
     width: clamp(36px, 9vw, 72px);
     max-height: clamp(36px, 9vw, 72px);
+    display: block;
     height: auto;
     object-fit: contain;
 }}
@@ -58,7 +61,7 @@ section.main > div:first-child {{
     flex: 1 1 auto;
     margin: 0;
     text-align: center;
-    font-size: clamp(1.2rem, 2.5vw, 2.2rem);
+    font-size: clamp(1.1rem, 2.2vw, 2.0rem);
     color: #262C68;
 }}
 
@@ -107,21 +110,22 @@ section.main > div:first-child {{
     }}
 
     .responsive-header {{
-        justify-content: space-between;
+        justify-content: center;
         gap: clamp(0.5rem, 5vw, 1.5rem);
     }}
 
     .responsive-header .header-logo-wrap {{
-        min-width: clamp(32px, 14vw, 60px);
+        min-width: clamp(28px, 14vw, 54px);
     }}
 
     .responsive-header .header-logo {{
         width: clamp(32px, 14vw, 60px);
     max-height: clamp(32px, 14vw, 60px);
+    display: block;
     }}
 
     .responsive-header .header-title {{
-        font-size: clamp(1.1rem, 4vw, 1.6rem);
+        font-size: clamp(1.0rem, 3.8vw, 1.4rem);
     }}
 
     input[type="number"], select, textarea {{
@@ -222,3 +226,5 @@ def render_page_header(
         """,
         unsafe_allow_html=True,
     )
+
+

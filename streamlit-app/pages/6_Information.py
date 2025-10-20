@@ -1,7 +1,10 @@
 import streamlit as st
+from utils.ui import inject_responsive_layout, render_page_header
 
 # ---------------------- PAGE CONFIG ----------------------
 st.set_page_config(page_title="Information & App Overview", layout="wide")
+
+inject_responsive_layout()
 
 # =========================
 # SIDEBAR LOGO 
@@ -9,7 +12,7 @@ st.set_page_config(page_title="Information & App Overview", layout="wide")
 with st.sidebar:
     # Place logo at the top with centered alignment
     st.markdown("<div style='text-align:center; margin-top:-10px; margin-bottom:15px;'>", unsafe_allow_html=True)
-    st.logo("Wahs.png", size="large")
+    st.logo("Wahs.png", size="small")
     st.sidebar.image("OneNZ.png", use_container_width=True)
     st.markdown("</div>", unsafe_allow_html=True)
     
@@ -57,11 +60,10 @@ table tbody tr:nth-child(even) td {
 # TITLE #
 st.markdown("""
 <style>
-
 .block-container {
-    padding-top: 3rem !important;
-    max-width: 1180px;
-    margin: auto;
+    padding-top: clamp(2rem, 4vw, 3rem) !important;
+    max-width: min(1180px, 100%) !important;
+    margin: 0 auto;
 }
 h1, h2, h3 {
     text-align: center;
@@ -72,13 +74,7 @@ h1, h2, h3 {
 """, unsafe_allow_html=True)
 
 # ---------------------- HEADER ---------------------------
-col1, col2, col3 = st.columns([0.5, 4, 0.5])
-with col1:
-    st.image("Wahs.png", width=80)
-with col2:
-    st.markdown("<h2>Information & App Overview</h2>", unsafe_allow_html=True)
-with col3:
-    st.image("NRLW Logo.png", width=80)
+render_page_header("Information & App Overview", "Wahs.png", "NRLW Logo.png", heading="h1")
 
 st.markdown("---")
 
@@ -117,9 +113,9 @@ N/m_{rel} = \\frac{0.5 \\sum_i n_i a_i^2 t_i^2}{d}
 $$
 
 Where:  
-- *nᵢ* = number of efforts in band *i*  
-- *aᵢ* = representative acceleration magnitude (m·s⁻²)  
-- *tᵢ* = typical duration for that band (s)  
+- *náµ¢* = number of efforts in band *i*  
+- *aáµ¢* = representative acceleration magnitude (m·s⁻²)  
+- *táµ¢* = typical duration for that band (s)  
 - *d* = total distance (m)  
 
 Deceleration bands are multiplied by **1.25** to reflect their higher eccentric mechanical cost.
@@ -162,7 +158,7 @@ The leading `100 x`and `Total Distance` scales the values into a coach-friendly 
    Cancelling mass makes the metric size-independent, allowing fair comparison across athletes of different body sizes.
 
 4. **Banded effort structure:**  
-   OpenField’s acceleration and deceleration effort counts (Bands 1-8) are treated as discrete constant-acceleration episodes with representative *aᵢ* and *tᵢ* values, aligning with device logic (Varley et al., 2012; Akenhead et al., 2013).
+   OpenField’s acceleration and deceleration effort counts (Bands 1-8) are treated as discrete constant-acceleration episodes with representative *aáµ¢* and *táµ¢* values, aligning with device logic (Varley et al., 2012; Akenhead et al., 2013).
 
 5. **Deceleration weighting:**  
    Decels are weighted 1.25x to reflect higher eccentric mechanical cost and braking demands (Harper & Kiely, 2018; Harper et al., 2019; Dalen et al., 2016).
@@ -178,7 +174,7 @@ st.markdown("---")
 
 # ---------------------- WHY N/M IS BETTER ----------------
 st.markdown("### Why use Newtons (N) and N/m")
-st.image("Correlation Matrix.png", width=700)
+st.image("Correlation Matrix.png", use_container_width=True)
 
 st.markdown("""
             
@@ -193,7 +189,7 @@ While m/min provides a simple summary of **locomotor output**, it has key limita
 - It ignores **accels, decels and collisions**, which drive the majority of mechanical stress.  
 - It often **underestimates session intensity** when distance is similar but achieved through more stop-start, high-force activity.
 
-For example, two players may each cover 5 km, but if one completes it in 50 minutes (100 m/min) and the other in 60 minutes (83 m/min), m/min suggests the second session is easier—even if it included more braking, contact, and direction changes.  
+For example, two players may each cover 5 km, but if one completes it in 50 minutes (100 m/min) and the other in 60 minutes (83 m/min), m/min suggests the second session is easier, even if it included more braking, contact, and direction changes.  
 Thus, **m/min reflects volume and density, not mechanical load**.
 
 **Acceleration Load**, as defined by Catapult, was designed to overcome this limitation by quantifying the total amount of *speed change activity*.  

@@ -43,11 +43,11 @@ section.main > div:first-child {{
     display: flex;
     align-items: center;
     justify-content: center;
-    min-width: clamp(60px, 12vw, 110px);
+    min-width: clamp(45px, 10vw, 90px);
 }}
 
 .responsive-header .header-logo {{
-    width: clamp(60px, 12vw, 110px);
+    width: clamp(45px, 10vw, 90px);
     height: auto;
     object-fit: contain;
 }}
@@ -110,11 +110,11 @@ section.main > div:first-child {{
     }}
 
     .responsive-header .header-logo-wrap {{
-        min-width: clamp(48px, 18vw, 80px);
+        min-width: clamp(40px, 16vw, 70px);
     }}
 
     .responsive-header .header-logo {{
-        width: clamp(48px, 18vw, 80px);
+        width: clamp(40px, 16vw, 70px);
     }}
 
     .responsive-header .header-title {{
@@ -219,34 +219,3 @@ def render_page_header(
         """,
         unsafe_allow_html=True,
     )
-    
-def inject_responsive_layout():
-    """Injects responsive CSS for mobile-friendly layout."""
-    st.markdown("""
-    <style>
-    @media (max-width: 768px) {
-        .block-container {
-            padding: 1rem !important;
-            max-width: 100% !important;
-        }
-        img {
-            max-width: 70px !important;
-            height: auto !important;
-        }
-        h1, h2, h3 {
-            font-size: 1.4rem !important;
-            text-align: center !important;
-        }
-    }
-    </style>
-    """, unsafe_allow_html=True)
-
-def render_page_header(title, left_logo, right_logo, heading="h1"):
-    """Render a centered header with logos on both sides."""
-    col1, col2, col3 = st.columns([0.5, 4, 0.5])
-    with col1:
-        st.image(left_logo, use_container_width=True)
-    with col2:
-        st.markdown(f"<{heading} style='text-align:center; color:#262C68;'>{title}</{heading}>", unsafe_allow_html=True)
-    with col3:
-        st.image(right_logo, use_container_width=True)

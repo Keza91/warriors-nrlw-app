@@ -13,135 +13,94 @@ def inject_responsive_layout(max_width: int = 1180) -> None:
     st.markdown(
         f"""
 <style>
-:root {{
+:root {{{{
     --page-max-width: {max_width}px;
-}}
+}}}}
 
-.block-container {{
+.block-container {{{{
     max-width: min(var(--page-max-width), 100%) !important;
     padding-left: clamp(0.75rem, 3vw, 2.5rem) !important;
     padding-right: clamp(0.75rem, 3vw, 2.5rem) !important;
     padding-top: clamp(2rem, 4vw, 3rem) !important;
     padding-bottom: clamp(2rem, 4vw, 3rem) !important;
-}}
+}}}}
 
-section.main > div:first-child {{
+section.main > div:first-child {{{{
     width: 100%;
-}}
+}}}}
 
-.responsive-header {{
-    display: flex;
+.responsive-header {{{{
+    display: grid;
+    grid-template-columns: auto 1fr auto;
     align-items: center;
-    justify-content: center;
-    flex-wrap: nowrap;
-    gap: clamp(0.5rem, 3vw, 1.5rem);
-    flex-wrap: nowrap;
+    column-gap: clamp(0.5rem, 3vw, 1.5rem);
     margin: clamp(1rem, 4vw, 2.5rem) auto;
     max-width: min(var(--page-max-width), 100%);
-}}
+}}}}
 
-.responsive-header .header-logo-wrap {{
-    flex: 0 0 clamp(36px, 9vw, 72px);
+.responsive-header .header-logo-wrap {{{{
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-wrap: nowrap;
-    min-width: clamp(36px, 9vw, 72px);
-}}
+    width: clamp(32px, 8vw, 64px);
+    height: clamp(32px, 8vw, 64px);
+}}}}
 
-.responsive-header .header-logo {{
-    width: clamp(36px, 9vw, 72px);
-    max-height: clamp(36px, 9vw, 72px);
-    display: block;
-    height: auto;
+.responsive-header .header-logo {{{{
+    width: clamp(32px, 8vw, 64px);
+    height: clamp(32px, 8vw, 64px);
     object-fit: contain;
-}}
+    display: block;
+}}}}
 
-.responsive-header .header-title {{
-    flex: 1 1 auto;
+.responsive-header .header-title {{{{
     margin: 0;
     text-align: center;
-    font-size: clamp(1.1rem, 2.2vw, 2.0rem);
+    font-size: clamp(1.05rem, 2.2vw, 1.9rem);
     color: #262C68;
-}}
+}}}}
 
-@media (max-width: 992px) {{
-    section.main div[data-testid="column"] {{
+@media (max-width: 992px) {{{{
+    section.main div[data-testid="column"] {{{{
         padding-left: 0 !important;
         padding-right: 0 !important;
-    }}
-}}
+    }}}}
+}}}}
 
-@media (max-width: 768px) {{
-    .block-container {{
+@media (max-width: 768px) {{{{
+    .block-container {{{{
         padding: 1rem !important;
         max-width: 100% !important;
-    }}
+    }}}}
 
-    section.main div[data-testid="column"] {{
-        width: 100% !important;
-        margin-left: 0 !important;
-        margin-right: 0 !important;
-        flex: 1 1 100% !important;
-    }}
-
-    section.main div[data-testid="stHorizontalBlock"] {{
-        gap: 0.75rem !important;
-    }}
-
-    .stColumns {{
-        display: flex;
-        flex-direction: column !important;
-        gap: 0.75rem !important;
-    }}
-
-    div[data-testid="stMetric"] {{
-        width: 100% !important;
-        min-width: 0 !important;
-    }}
-
-    div[data-testid="stMarkdownContainer"] table {{
+    div[data-testid="stMarkdownContainer"] table {{{{
         display: block;
         overflow-x: auto;
         overflow-y: auto;
         width: 100% !important;
         font-size: 0.85rem;
         max-height: none !important;
-    }}
+    }}}}
 
-    .responsive-header {{
-        justify-content: center;
-        gap: clamp(0.5rem, 5vw, 1.5rem);
-    }}
+    .responsive-header {{{{
+        column-gap: clamp(0.4rem, 4vw, 0.9rem);
+    }}}}
 
-    .responsive-header .header-logo-wrap {{
-        min-width: clamp(28px, 14vw, 54px);
-    }}
+    .responsive-header .header-logo-wrap {{{{
+        width: clamp(26px, 12vw, 48px);
+        height: clamp(26px, 12vw, 48px);
+    }}}}
 
-    .responsive-header .header-logo {{
-        width: clamp(32px, 14vw, 60px);
-    max-height: clamp(32px, 14vw, 60px);
-    display: block;
-    }}
+    .responsive-header .header-logo {{{{
+        width: clamp(26px, 12vw, 48px);
+        height: clamp(26px, 12vw, 48px);
+        object-fit: contain;
+        display: block;
+    }}}}
 
-    .responsive-header .header-title {{
-        font-size: clamp(1.0rem, 3.8vw, 1.4rem);
-    }}
-
-    input[type="number"], select, textarea {{
-        width: 100% !important;
-        min-height: 45px;
-        font-size: 1rem;
-    }}
-
-    h1, h2, h3 {{
-        text-align: center !important;
-    }}
-
-    button[kind="primary"] {{
-        width: 100% !important;
-        font-size: 1rem;
-    }}
+    .responsive-header .header-title {{{{
+        font-size: clamp(0.95rem, 3.4vw, 1.3rem);
+    }}}}
 }}
 </style>
         """,
@@ -226,5 +185,3 @@ def render_page_header(
         """,
         unsafe_allow_html=True,
     )
-
-

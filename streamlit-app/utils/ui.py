@@ -94,8 +94,6 @@ section.main > div:first-child {{{{
     .responsive-header .header-logo {{{{
         width: clamp(26px, 12vw, 48px);
         height: clamp(26px, 12vw, 48px);
-        object-fit: contain;
-        display: block;
     }}}}
 
     .responsive-header .header-title {{{{
@@ -133,16 +131,16 @@ def _image_to_data_uri(image_path: str) -> str:
             continue
         seen.add(candidate)
         if candidate.exists():
-            mime_map = {
+            mime_map = {{{{
                 ".png": "image/png",
                 ".jpg": "image/jpeg",
                 ".jpeg": "image/jpeg",
                 ".svg": "image/svg+xml",
                 ".gif": "image/gif",
-            }
+            }}}}
             mime = mime_map.get(candidate.suffix.lower(), "image/png")
             encoded = base64.b64encode(candidate.read_bytes()).decode("utf-8")
-            return f"data:{mime};base64,{encoded}"
+            return f"data:{{mime}};base64,{{encoded}}"
     return ""
 
 
@@ -156,31 +154,31 @@ def render_page_header(
 ) -> None:
     """Render a responsive header with flanking logos that stays horizontal on phones."""
     tag = heading.lower()
-    if tag not in {"h1", "h2", "h3", "h4"}:
+    if tag not in {{"h1", "h2", "h3", "h4"}}:
         tag = "h1"
 
     left_src = _image_to_data_uri(left_image)
     right_src = _image_to_data_uri(right_image)
 
     left_html = (
-        f'<img src="{left_src}" alt="Left logo" class="header-logo" />'
+        f'<img src="{{left_src}}" alt="Left logo" class="header-logo" />'
         if left_src
         else ""
     )
     right_html = (
-        f'<img src="{right_src}" alt="Right logo" class="header-logo" />'
+        f'<img src="{{right_src}}" alt="Right logo" class="header-logo" />'
         if right_src
         else ""
     )
 
-    title_cls = f"header-title {title_class}" if title_class else "header-title"
+    title_cls = f"header-title {{title_class}}" if title_class else "header-title"
 
     st.markdown(
         f"""
 <div class="responsive-header">
-  <div class="header-logo-wrap">{left_html}</div>
-  <{tag} class="{title_cls}">{title}</{tag}>
-  <div class="header-logo-wrap">{right_html}</div>
+  <div class="header-logo-wrap">{{left_html}}</div>
+  <{{tag}} class="{{title_cls}}">{{title}}</{{tag}}>
+  <div class="header-logo-wrap">{{right_html}}</div>
 </div>
         """,
         unsafe_allow_html=True,

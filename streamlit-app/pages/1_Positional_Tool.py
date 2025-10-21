@@ -151,6 +151,43 @@ table th, table td {
 """, unsafe_allow_html=True)
 
 # TITLE #
+
+st.markdown("""
+<style>
+.weights-step-box div[data-testid="stHorizontalBlock"] {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    gap: clamp(0.4rem, 2vw, 1rem) !important;
+}
+.weights-step-box div[data-testid="column"] {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+}
+.weights-step-box div[data-testid="column"]:first-child {
+    flex: 1.8 !important;
+}
+.weights-step-box .stNumberInput > div > div {
+    width: clamp(90px, 18vw, 120px) !important;
+}
+.weights-step-box label {
+    font-size: clamp(0.85rem, 2.2vw, 1rem) !important;
+}
+@media (max-width: 768px) {
+    .weights-step-box div[data-testid="stHorizontalBlock"] {
+        gap: 0.4rem !important;
+    }
+    .weights-step-box div[data-testid="column"]:first-child {
+        flex: 1.6 !important;
+    }
+    .weights-step-box .stNumberInput > div > div {
+        width: 78px !important;
+    }
+    .weights-step-box label {
+        font-size: 0.82rem !important;
+    }
+}
+</style>
+""", unsafe_allow_html=True)
 st.markdown("""
 <style>
 .block-container {
@@ -213,7 +250,7 @@ if not slopes_by_position:
     st.stop()
 
 # ---------- Step 1 ----------
-st.markdown('<div class="step-box">', unsafe_allow_html=True)
+st.markdown('<div class="step-box weights-step-box">', unsafe_allow_html=True)
 st.markdown("### Step 1 - Choose Position")
 
 pos_select_col, _ = st.columns([1, 3])
@@ -250,7 +287,7 @@ default_weights = {m: round(pos_slopes[m] / sum_pos, 2) for m in METRICS} if sum
 
 st.markdown("#### Weights & Current Metrics")
 
-cols = st.columns([2, 1, 1])
+cols = st.columns([2.2, 1, 1], gap="small")
 with cols[0]:
     st.markdown("**Metric**")
 with cols[1]:
@@ -260,7 +297,7 @@ with cols[2]:
 
 weight_inputs, current_inputs = {}, {}
 for m in METRICS:
-    c = st.columns([2, 1, 1])
+    c = st.columns([2.2, 1, 1], gap="small")
     with c[0]:
         st.markdown(m)
     with c[1]:
@@ -336,4 +373,5 @@ else:
         st.info("These selected metrics have ≤ 0 slopes and were ignored: " + ", ".join(bad))
 
 st.markdown("</div>", unsafe_allow_html=True)
+
 

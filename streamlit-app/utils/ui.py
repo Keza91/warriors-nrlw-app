@@ -8,103 +8,120 @@ import streamlit as st
 _BASE_DIR = Path(__file__).resolve().parent.parent
 
 
+
 def inject_responsive_layout(max_width: int = 1180) -> None:
     """Inject responsive CSS so pages adapt on smaller screens."""
-    st.markdown(
-        f"""
+    css = f"""
 <style>
-:root {{{{
+:root {{
     --page-max-width: {max_width}px;
-}}}}
+}}
 
-.block-container {{{{
+.block-container {{
     max-width: min(var(--page-max-width), 100%) !important;
     padding-left: clamp(0.75rem, 3vw, 2.5rem) !important;
     padding-right: clamp(0.75rem, 3vw, 2.5rem) !important;
     padding-top: clamp(2rem, 4vw, 3rem) !important;
     padding-bottom: clamp(2rem, 4vw, 3rem) !important;
-}}}}
+}}
 
-section.main > div:first-child {{{{
+section.main > div:first-child {{
     width: 100%;
-}}}}
+}}
 
-.responsive-header {{{{
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    align-items: center;
-    column-gap: clamp(0.5rem, 3vw, 1.5rem);
-    margin: clamp(1rem, 4vw, 2.5rem) auto;
-    max-width: min(var(--page-max-width), 100%);
-}}}}
-
-.responsive-header .header-logo-wrap {{{{
+.app-header {{
     display: flex;
     align-items: center;
     justify-content: center;
-    width: clamp(32px, 8vw, 64px);
-    height: clamp(32px, 8vw, 64px);
-}}}}
+    gap: clamp(0.5rem, 3vw, 1.5rem);
+    margin: clamp(1rem, 4vw, 2.5rem) auto;
+    max-width: min(var(--page-max-width), 100%);
+}}
 
-.responsive-header .header-logo {{{{
-    width: clamp(32px, 8vw, 64px);
-    height: clamp(32px, 8vw, 64px);
+.app-header-logo-wrap {{
+    flex: 0 0 auto;
+}}
+
+.app-header-logo {{
+    width: clamp(34px, 9vw, 58px);
+    height: clamp(34px, 9vw, 58px);
     object-fit: contain;
     display: block;
-}}}}
+}}
 
-.responsive-header .header-title {{{{
+.app-header-title {{
     margin: 0;
     text-align: center;
     font-size: clamp(1.05rem, 2.2vw, 1.9rem);
     color: #262C68;
-}}}}
+}}
 
-@media (max-width: 992px) {{{{
-    section.main div[data-testid="column"] {{{{
-        padding-left: 0 !important;
-        padding-right: 0 !important;
-    }}}}
-}}}}
-
-@media (max-width: 768px) {{{{
-    .block-container {{{{
+@media (max-width: 768px) {{
+    .block-container {{
         padding: 1rem !important;
         max-width: 100% !important;
-    }}}}
+    }}
 
-    div[data-testid="stMarkdownContainer"] table {{{{
-        display: block;
-        overflow-x: auto;
-        overflow-y: auto;
-        width: 100% !important;
-        font-size: 0.85rem;
-        max-height: none !important;
-    }}}}
+    .app-header {{
+        gap: clamp(0.4rem, 4vw, 1rem);
+    }}
 
-    .responsive-header {{{{
-        column-gap: clamp(0.4rem, 4vw, 0.9rem);
-    }}}}
+    .app-header-logo {{
+        width: clamp(26px, 12vw, 44px);
+        height: clamp(26px, 12vw, 44px);
+    }}
 
-    .responsive-header .header-logo-wrap {{{{
-        width: clamp(26px, 12vw, 48px);
-        height: clamp(26px, 12vw, 48px);
-    }}}}
-
-    .responsive-header .header-logo {{{{
-        width: clamp(26px, 12vw, 48px);
-        height: clamp(26px, 12vw, 48px);
-    }}}}
-
-    .responsive-header .header-title {{{{
+    .app-header-title {{
         font-size: clamp(0.95rem, 3.4vw, 1.3rem);
-    }}}}
+    }}
 }}
 </style>
-        """,
-        unsafe_allow_html=True,
-    )
+"""
+    css += """
+<style>
+/* Preserve a horizontal three-column grid specifically for Step 2 */
+.step2-grid [data-testid="stHorizontalBlock"] {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center;
+    gap: clamp(0.4rem, 2vw, 1rem) !important;
+}
 
+.step2-grid [data-testid="stHorizontalBlock"] > div {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+}
+
+.step2-grid [data-testid="stHorizontalBlock"] > div:first-child {
+    flex: 1.6 1 0 !important;
+}
+
+.step2-grid .stMarkdown p {
+    margin-bottom: 0.25rem !important;
+}
+
+.step2-grid .stNumberInput > div > div {
+    width: clamp(80px, 18vw, 120px) !important;
+}
+
+@media (max-width: 768px) {
+    .step2-grid [data-testid="stHorizontalBlock"] {
+        gap: 0.35rem !important;
+    }
+    .step2-grid [data-testid="stHorizontalBlock"] > div:first-child {
+        flex: 1.4 1 0 !important;
+    }
+    .step2-grid .stNumberInput > div > div {
+        width: 100% !important;
+    }
+    .step2-grid .stMarkdown p {
+        font-size: 0.9rem !important;
+    }
+}
+</style>
+"""
+    st.markdown(css, unsafe_allow_html=True)
 
 def _candidate_paths(image_path: Path) -> Iterable[Path]:
     if image_path.is_absolute():
@@ -123,6 +140,16 @@ def _candidate_paths(image_path: Path) -> Iterable[Path]:
         yield (root / image_path).resolve()
 
 
+def _resolve_image_path(image_path: str) -> str | None:
+    rel_path = Path(image_path)
+    for candidate in _candidate_paths(rel_path):
+        if candidate.exists():
+            return str(candidate)
+    return None
+
+
+
+
 def _image_to_data_uri(image_path: str) -> str:
     rel_path = Path(image_path)
     seen: set[Path] = set()
@@ -131,19 +158,17 @@ def _image_to_data_uri(image_path: str) -> str:
             continue
         seen.add(candidate)
         if candidate.exists():
-            mime_map = {{{{
+            mime_map = {
                 ".png": "image/png",
                 ".jpg": "image/jpeg",
                 ".jpeg": "image/jpeg",
                 ".svg": "image/svg+xml",
                 ".gif": "image/gif",
-            }}}}
+            }
             mime = mime_map.get(candidate.suffix.lower(), "image/png")
             encoded = base64.b64encode(candidate.read_bytes()).decode("utf-8")
-            return f"data:{{mime}};base64,{{encoded}}"
+            return f"data:{mime};base64,{encoded}"
     return ""
-
-
 def render_page_header(
     title: str,
     left_image: str,
@@ -154,32 +179,23 @@ def render_page_header(
 ) -> None:
     """Render a responsive header with flanking logos that stays horizontal on phones."""
     tag = heading.lower()
-    if tag not in {{"h1", "h2", "h3", "h4"}}:
+    if tag not in {"h1", "h2", "h3", "h4"}:
         tag = "h1"
 
     left_src = _image_to_data_uri(left_image)
     right_src = _image_to_data_uri(right_image)
 
-    left_html = (
-        f'<img src="{{left_src}}" alt="Left logo" class="header-logo" />'
-        if left_src
-        else ""
-    )
-    right_html = (
-        f'<img src="{{right_src}}" alt="Right logo" class="header-logo" />'
-        if right_src
-        else ""
-    )
+    left_html = f"<img src='{left_src}' class='app-header-logo' alt='Left logo'/>" if left_src else ""
+    right_html = f"<img src='{right_src}' class='app-header-logo' alt='Right logo'/>" if right_src else ""
 
-    title_cls = f"header-title {{title_class}}" if title_class else "header-title"
+    title_cls = f"app-header-title {title_class}" if title_class else "app-header-title"
 
-    st.markdown(
-        f"""
-<div class="responsive-header">
-  <div class="header-logo-wrap">{{left_html}}</div>
-  <{{tag}} class="{{title_cls}}">{{title}}</{{tag}}>
-  <div class="header-logo-wrap">{{right_html}}</div>
+    header_html = f"""
+<div class='app-header'>
+  <div class='app-header-logo-wrap'>{left_html}</div>
+  <{tag} class='{title_cls}'>{title}</{tag}>
+  <div class='app-header-logo-wrap'>{right_html}</div>
 </div>
-        """,
-        unsafe_allow_html=True,
-    )
+"""
+    st.markdown(header_html, unsafe_allow_html=True)
+

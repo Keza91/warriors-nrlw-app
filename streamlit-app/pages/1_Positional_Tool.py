@@ -37,7 +37,7 @@ def fetch_sheet_df(sheet_id: str, worksheet_name: str, range_a1: str) -> pd.Data
     return df.dropna(subset=[COLS["position"], COLS["target"], COLS["minutes"]])
 
 # =========================
-# CONFIG — NRLW Data
+# CONFIG - NRLW Data
 # =========================
 SHEET_ID = "1JqDkmbXDCWyNjpsMffbQyi6pSXQWOEm4lAf6cvmEhM4"
 WORKSHEET_NAME = "NRLW_ALL"
@@ -210,10 +210,10 @@ def compute_univariate_slopes(df: pd.DataFrame) -> dict:
 # =========================
 raw_df = fetch_sheet_df(SHEET_ID, WORKSHEET_NAME, RANGE_A1)
 
-# Apply ≥35 min filter
+# Apply =35 min filter
 df = raw_df[raw_df[COLS["minutes"]] >= MINUTES_FILTER].copy()
 if df.empty:
-    st.error(f"No rows with {COLS['minutes']} ≥ {MINUTES_FILTER}.")
+    st.error(f"No rows with {COLS['minutes']} = {MINUTES_FILTER}.")
     st.stop()
 
 slopes_by_position = compute_univariate_slopes(df)
@@ -222,7 +222,7 @@ if not slopes_by_position:
     st.stop()
 
 # ---------- Step 1 ----------
-st.markdown('<div class="step-box">', unsafe_allow_html=True)
+st.markdown('<div class="step-box step2-box">', unsafe_allow_html=True)
 st.markdown("### Step 1 - Choose Position")
 
 pos_select_col, _ = st.columns([1, 3])
@@ -258,7 +258,7 @@ sum_pos = sum(pos_slopes.values())
 default_weights = {m: round(pos_slopes[m] / sum_pos, 2) for m in METRICS} if sum_pos > 0 else {m: round(1.0 / len(METRICS), 2) for m in METRICS}
 
 with st.container():
-    st.markdown('<span class="step2-marker"></span>', unsafe_allow_html=True)
+    st.markdown('<div class="step2-weights">', unsafe_allow_html=True)
     st.markdown("#### Weights & Current Metrics")
 
     h_metric, h_weight, h_current = st.columns([2, 1, 1])
@@ -284,6 +284,7 @@ with st.container():
                 f"Current {m}", min_value=0.0, step=1.0,
                 value=0.0, label_visibility="collapsed", key=f"c_{m}"
             )
+    st.markdown('</div>', unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
 st.markdown('---')
 

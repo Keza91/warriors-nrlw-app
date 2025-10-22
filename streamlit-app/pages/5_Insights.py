@@ -697,3 +697,4 @@ Shows real values (m, min, N/m) to illustrate what winning weeks look like.
         st.info("Insufficient linked training-week data to compare winning vs losing weeks.")
 else:
     st.info("No data available for the selected filters.")
+

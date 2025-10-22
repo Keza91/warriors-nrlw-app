@@ -244,47 +244,46 @@ st.markdown('---')
 st.markdown('<div class="step-box">', unsafe_allow_html=True)
 st.markdown("### Step 2 - Target & Inputs")
 
-st.markdown('<div class="target-input-box">', unsafe_allow_html=True)
-target_nm = st.number_input(
-    "Target N/m",
-    min_value=0.0, value=1.0, step=0.1, format="%.1f",
-    help="Set the N/m load you want to reach. Example: enter 1.0 to plan a +1 N/m top-up session.",
-    label_visibility="collapsed"
-)
-st.markdown('</div>', unsafe_allow_html=True)
+target_col, _ = st.columns([1, 3])
+with target_col:
+    target_nm = st.number_input(
+        "Target N/m",
+        min_value=0.0, value=1.0, step=0.1, format="%.1f",
+        help="Set the N/m load you want to reach. Example: enter 1.0 to plan a +1 N/m top-up session.",
+        label_visibility="collapsed"
+    )
 
 pos_slopes = {m: max(0.0, SLOPES[m]) for m in METRICS}
 sum_pos = sum(pos_slopes.values())
 default_weights = {m: round(pos_slopes[m] / sum_pos, 2) for m in METRICS} if sum_pos > 0 else {m: round(1.0 / len(METRICS), 2) for m in METRICS}
 
-st.markdown('<div class="step2-grid">', unsafe_allow_html=True)
-st.markdown("#### Weights & Current Metrics")
+with st.container():
+    st.markdown('<span class="step2-marker"></span>', unsafe_allow_html=True)
+    st.markdown("#### Weights & Current Metrics")
 
-h_metric, h_weight, h_current = st.columns([2, 1, 1])
-with h_metric:
-    st.markdown("**Metric**")
-with h_weight:
-    st.markdown("**Weight**", help="Controls how much of the top-up is assigned to each metric. Defaults are proportional to slope efficiency.")
-with h_current:
-    st.markdown("**Current**", help="Enter the player's current total for each metric.")
+    h_metric, h_weight, h_current = st.columns([2, 1, 1])
+    with h_metric:
+        st.markdown("**Metric**")
+    with h_weight:
+        st.markdown("**Weight**", help="Controls how much of the top-up is assigned to each metric. Defaults are proportional to slope efficiency.")
+    with h_current:
+        st.markdown("**Current**", help="Enter the player's current total for each metric.")
 
-weight_inputs, current_inputs = {}, {}
-for m in METRICS:
-    c_metric, c_weight, c_current = st.columns([2, 1, 1])
-    with c_metric:
-        st.markdown(display_metric(m))
-    with c_weight:
-        weight_inputs[m] = st.number_input(
-            f"Weight {m}", min_value=0.0, max_value=1.0, step=0.01,
-            value=float(default_weights[m]), label_visibility="collapsed", key=f"w_{m}"
-        )
-    with c_current:
-        current_inputs[m] = st.number_input(
-            f"Current {m}", min_value=0.0, step=1.0,
-            value=0.0, label_visibility="collapsed", key=f"c_{m}"
-        )
-
-st.markdown("</div>", unsafe_allow_html=True)
+    weight_inputs, current_inputs = {}, {}
+    for m in METRICS:
+        c_metric, c_weight, c_current = st.columns([2, 1, 1])
+        with c_metric:
+            st.markdown(display_metric(m))
+        with c_weight:
+            weight_inputs[m] = st.number_input(
+                f"Weight {m}", min_value=0.0, max_value=1.0, step=0.01,
+                value=float(default_weights[m]), label_visibility="collapsed", key=f"w_{m}"
+            )
+        with c_current:
+            current_inputs[m] = st.number_input(
+                f"Current {m}", min_value=0.0, step=1.0,
+                value=0.0, label_visibility="collapsed", key=f"c_{m}"
+            )
 st.markdown('</div>', unsafe_allow_html=True)
 st.markdown('---')
 
@@ -354,6 +353,9 @@ else:
         st.info("These selected metrics have <= 0 slopes and were ignored: " + ignored)
 
 st.markdown("</div>", unsafe_allow_html=True)
+
+
+
 
 
 

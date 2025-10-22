@@ -79,43 +79,44 @@ section.main > div:first-child {{
 """
     css += """
 <style>
-/* Preserve a horizontal three-column grid specifically for Step 2 */
-.step2-grid [data-testid="stHorizontalBlock"] {
+.step2-marker { display: none; }
+
+.step2-marker ~ div[data-testid="stHorizontalBlock"] {
     display: flex !important;
     flex-direction: row !important;
     flex-wrap: nowrap !important;
     align-items: center;
-    gap: clamp(0.4rem, 2vw, 1rem) !important;
+    gap: clamp(0.35rem, 2vw, 0.9rem) !important;
 }
 
-.step2-grid [data-testid="stHorizontalBlock"] > div {
+.step2-marker ~ div[data-testid="stHorizontalBlock"] > div {
     flex: 1 1 0 !important;
     min-width: 0 !important;
 }
 
-.step2-grid [data-testid="stHorizontalBlock"] > div:first-child {
+.step2-marker ~ div[data-testid="stHorizontalBlock"] > div:first-child {
     flex: 1.6 1 0 !important;
 }
 
-.step2-grid .stMarkdown p {
+.step2-marker ~ div[data-testid="stHorizontalBlock"] .stMarkdown p {
     margin-bottom: 0.25rem !important;
 }
 
-.step2-grid .stNumberInput > div > div {
-    width: clamp(80px, 18vw, 120px) !important;
+.step2-marker ~ div[data-testid="stHorizontalBlock"] .stNumberInput > div > div {
+    width: clamp(88px, 18vw, 118px) !important;
 }
 
 @media (max-width: 768px) {
-    .step2-grid [data-testid="stHorizontalBlock"] {
-        gap: 0.35rem !important;
+    .step2-marker ~ div[data-testid="stHorizontalBlock"] {
+        gap: 0.3rem !important;
     }
-    .step2-grid [data-testid="stHorizontalBlock"] > div:first-child {
-        flex: 1.4 1 0 !important;
+    .step2-marker ~ div[data-testid="stHorizontalBlock"] > div:first-child {
+        flex: 1.35 1 0 !important;
     }
-    .step2-grid .stNumberInput > div > div {
-        width: 100% !important;
+    .step2-marker ~ div[data-testid="stHorizontalBlock"] .stNumberInput > div > div {
+        width: clamp(66px, 22vw, 92px) !important;
     }
-    .step2-grid .stMarkdown p {
+    .step2-marker ~ div[data-testid="stHorizontalBlock"] .stMarkdown p {
         font-size: 0.9rem !important;
     }
 }
@@ -198,4 +199,7 @@ def render_page_header(
 </div>
 """
     st.markdown(header_html, unsafe_allow_html=True)
+
+
+
 

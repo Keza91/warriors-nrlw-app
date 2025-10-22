@@ -187,6 +187,9 @@ def render_table(df: pd.DataFrame, index=False):
     html = df.to_html(index=index, justify="center", classes="results-table", escape=False)
     st.markdown(html, unsafe_allow_html=True)
 
+
+
+
 @st.cache_data(show_spinner=True)
 def compute_univariate_slopes(df: pd.DataFrame) -> dict:
     slopes_by_pos = {}
@@ -222,7 +225,7 @@ if not slopes_by_position:
     st.stop()
 
 # ---------- Step 1 ----------
-st.markdown('<div class="step-box step2-box">', unsafe_allow_html=True)
+st.markdown('<div class="step-box">', unsafe_allow_html=True)
 st.markdown("### Step 1 - Choose Position")
 
 pos_select_col, _ = st.columns([1, 3])
@@ -241,7 +244,7 @@ st.markdown('</div>', unsafe_allow_html=True)
 st.markdown('---')
 
 # ---------- Step 2 ----------
-st.markdown('<div class="step-box">', unsafe_allow_html=True)
+st.markdown('<div class="step-box step2-box">', unsafe_allow_html=True)
 st.markdown("### Step 2 - Target & Inputs")
 
 target_col, _ = st.columns([1, 3])
@@ -257,34 +260,66 @@ pos_slopes = {m: max(0.0, SLOPES[m]) for m in METRICS}
 sum_pos = sum(pos_slopes.values())
 default_weights = {m: round(pos_slopes[m] / sum_pos, 2) for m in METRICS} if sum_pos > 0 else {m: round(1.0 / len(METRICS), 2) for m in METRICS}
 
-with st.container():
-    st.markdown('<div class="step2-weights">', unsafe_allow_html=True)
-    st.markdown("#### Weights & Current Metrics")
+st.markdown("#### Weights & Current Metrics")
 
-    h_metric, h_weight, h_current = st.columns([2, 1, 1])
-    with h_metric:
-        st.markdown("**Metric**")
-    with h_weight:
-        st.markdown("**Weight**", help="Controls how much of the top-up is assigned to each metric. Defaults are proportional to slope efficiency.")
-    with h_current:
-        st.markdown("**Current**", help="Enter the player's current total for each metric.")
+st.markdown(
+    """
+<style>
+.step2-box [data-testid=\"stDataEditor\"] table thead th,
+.step2-box [data-testid=\"stDataEditor\"] table tbody td {
+    text-align: center !important;
+    vertical-align: middle !important;
+}
+.step2-box [data-testid=\"stDataEditor\"] table colgroup col:first-child {
+    width: 120px !important;
+}
+</style>
+""",
+    unsafe_allow_html=True,
+)
 
-    weight_inputs, current_inputs = {}, {}
-    for m in METRICS:
-        c_metric, c_weight, c_current = st.columns([2, 1, 1])
-        with c_metric:
-            st.markdown(display_metric(m))
-        with c_weight:
-            weight_inputs[m] = st.number_input(
-                f"Weight {m}", min_value=0.0, max_value=1.0, step=0.01,
-                value=float(default_weights[m]), label_visibility="collapsed", key=f"w_{m}"
-            )
-        with c_current:
-            current_inputs[m] = st.number_input(
-                f"Current {m}", min_value=0.0, step=1.0,
-                value=0.0, label_visibility="collapsed", key=f"c_{m}"
-            )
-    st.markdown('</div>', unsafe_allow_html=True)
+initial_rows = [
+    {"Metric": display_metric(m), "Weight": float(default_weights[m]), "Current": 0.0}
+    for m in METRICS
+]
+cache_key = f"step2_editor_{position}"
+if "_step2_editor_state" not in st.session_state:
+    st.session_state._step2_editor_state = {}
+if cache_key not in st.session_state._step2_editor_state:
+    st.session_state._step2_editor_state[cache_key] = pd.DataFrame(initial_rows)
+else:
+    stored = st.session_state._step2_editor_state[cache_key]
+    aligned = pd.DataFrame(initial_rows)
+    for label in aligned["Metric"]:
+        if label in stored["Metric"].values:
+            row = stored.loc[stored["Metric"] == label].iloc[0]
+            aligned.loc[aligned["Metric"] == label, "Weight"] = float(row.get("Weight", 0.0))
+            aligned.loc[aligned["Metric"] == label, "Current"] = float(row.get("Current", 0.0))
+    st.session_state._step2_editor_state[cache_key] = aligned
+
+data_editor_df = st.data_editor(
+    st.session_state._step2_editor_state[cache_key],
+    column_config={
+        "Metric": st.column_config.TextColumn("Metric", width="small", help="Metric name (read-only)."),
+        "Weight": st.column_config.NumberColumn("Weight", min_value=0.0, max_value=1.0, step=0.01, format="%.2f", help="Controls how much of the top-up is assigned to each metric. Defaults are proportional to slope efficiency."),
+        "Current": st.column_config.NumberColumn("Current", min_value=0.0, step=1.0, format="%.0f", help="Enter the player's current total for each metric.")
+    },
+    disabled=["Metric"],
+    hide_index=True,
+    use_container_width=True,
+    num_rows="fixed",
+    key=f"weights_current_editor_{position}"
+)
+# Persist edits for this position
+st.session_state._step2_editor_state[cache_key] = data_editor_df.copy()
+
+weight_inputs, current_inputs = {}, {}
+label_to_metric = {display_metric(m): m for m in METRICS}
+for _, row in data_editor_df.iterrows():
+    metric = label_to_metric[row["Metric"]]
+    weight_inputs[metric] = max(0.0, min(1.0, float(row.get("Weight", 0.0))))
+    current_inputs[metric] = max(0.0, float(row.get("Current", 0.0)))
+
 st.markdown('</div>', unsafe_allow_html=True)
 st.markdown('---')
 
@@ -354,6 +389,14 @@ else:
         st.info("These selected metrics have <= 0 slopes and were ignored: " + ignored)
 
 st.markdown("</div>", unsafe_allow_html=True)
+
+
+
+
+
+
+
+
 
 
 

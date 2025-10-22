@@ -77,52 +77,9 @@ section.main > div:first-child {{
 }}
 </style>
 """
-    css += """
-<style>
-.step2-marker { display: none; }
-
-.step2-marker ~ div[data-testid="stHorizontalBlock"] {
-    display: flex !important;
-    flex-direction: row !important;
-    flex-wrap: nowrap !important;
-    align-items: center;
-    gap: clamp(0.35rem, 2vw, 0.9rem) !important;
-}
-
-.step2-marker ~ div[data-testid="stHorizontalBlock"] > div {
-    flex: 1 1 0 !important;
-    min-width: 0 !important;
-}
-
-.step2-marker ~ div[data-testid="stHorizontalBlock"] > div:first-child {
-    flex: 1.6 1 0 !important;
-}
-
-.step2-marker ~ div[data-testid="stHorizontalBlock"] .stMarkdown p {
-    margin-bottom: 0.25rem !important;
-}
-
-.step2-marker ~ div[data-testid="stHorizontalBlock"] .stNumberInput > div > div {
-    width: clamp(88px, 18vw, 118px) !important;
-}
-
-@media (max-width: 768px) {
-    .step2-marker ~ div[data-testid="stHorizontalBlock"] {
-        gap: 0.3rem !important;
-    }
-    .step2-marker ~ div[data-testid="stHorizontalBlock"] > div:first-child {
-        flex: 1.35 1 0 !important;
-    }
-    .step2-marker ~ div[data-testid="stHorizontalBlock"] .stNumberInput > div > div {
-        width: clamp(66px, 22vw, 92px) !important;
-    }
-    .step2-marker ~ div[data-testid="stHorizontalBlock"] .stMarkdown p {
-        font-size: 0.9rem !important;
-    }
-}
-</style>
-"""
     st.markdown(css, unsafe_allow_html=True)
+
+
 
 def _candidate_paths(image_path: Path) -> Iterable[Path]:
     if image_path.is_absolute():
@@ -199,6 +156,8 @@ def render_page_header(
 </div>
 """
     st.markdown(header_html, unsafe_allow_html=True)
+
+
 
 
 

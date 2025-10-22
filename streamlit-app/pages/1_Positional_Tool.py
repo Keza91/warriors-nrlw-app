@@ -76,6 +76,15 @@ METRIC_TO_COL = {
     "Decel Distance": COLS["decel_dist"],
 }
 
+DISPLAY_LABELS = {
+    "High Speed Running": "HSR",
+}
+
+
+def display_metric(name: str) -> str:
+    return DISPLAY_LABELS.get(name, name)
+
+
 PRIORITY = {
     "High Speed Running": 0.3,
     "VHSR": 0.6,
@@ -226,10 +235,10 @@ with pos_select_col:
 SLOPES = slopes_by_position[position]
 
 slopes_df = pd.DataFrame([SLOPES], index=[position])[METRICS].reset_index()
-slopes_df.columns = ["Position"] + METRICS
+slopes_df.columns = ["Position"] + [display_metric(m) for m in METRICS]
 render_table(slopes_df)
-st.markdown("</div>", unsafe_allow_html=True)
-st.markdown("---")
+st.markdown('</div>', unsafe_allow_html=True)
+st.markdown('---')
 
 # ---------- Step 2 ----------
 st.markdown('<div class="step-box">', unsafe_allow_html=True)
@@ -248,44 +257,50 @@ pos_slopes = {m: max(0.0, SLOPES[m]) for m in METRICS}
 sum_pos = sum(pos_slopes.values())
 default_weights = {m: round(pos_slopes[m] / sum_pos, 2) for m in METRICS} if sum_pos > 0 else {m: round(1.0 / len(METRICS), 2) for m in METRICS}
 
+st.markdown('<div class="step2-grid">', unsafe_allow_html=True)
 st.markdown("#### Weights & Current Metrics")
 
-cols = st.columns([2, 1, 1])
-with cols[0]:
+h_metric, h_weight, h_current = st.columns([2, 1, 1])
+with h_metric:
     st.markdown("**Metric**")
-with cols[1]:
+with h_weight:
     st.markdown("**Weight**", help="Controls how much of the top-up is assigned to each metric. Defaults are proportional to slope efficiency.")
-with cols[2]:
-    st.markdown("**Current**", help="Enter the player’s current total for each metric.")
+with h_current:
+    st.markdown("**Current**", help="Enter the player's current total for each metric.")
 
 weight_inputs, current_inputs = {}, {}
 for m in METRICS:
-    c = st.columns([2, 1, 1])
-    with c[0]:
-        st.markdown(m)
-    with c[1]:
+    c_metric, c_weight, c_current = st.columns([2, 1, 1])
+    with c_metric:
+        st.markdown(display_metric(m))
+    with c_weight:
         weight_inputs[m] = st.number_input(
             f"Weight {m}", min_value=0.0, max_value=1.0, step=0.01,
             value=float(default_weights[m]), label_visibility="collapsed", key=f"w_{m}"
         )
-    with c[2]:
+    with c_current:
         current_inputs[m] = st.number_input(
             f"Current {m}", min_value=0.0, step=1.0,
             value=0.0, label_visibility="collapsed", key=f"c_{m}"
         )
+
 st.markdown("</div>", unsafe_allow_html=True)
-st.markdown("---")
+st.markdown('</div>', unsafe_allow_html=True)
+st.markdown('---')
 
 # ---------- Step 3 ----------
 st.markdown('<div class="step-box">', unsafe_allow_html=True)
 st.markdown("### Step 3 - Results")
 
-selected_metrics = st.multiselect(
+display_options = [display_metric(m) for m in METRICS]
+preselected = [display_metric(m) for m in METRICS if SLOPES[m] > 0]
+selected_display = st.multiselect(
     "Select metrics to use for top-up",
-    METRICS,
-    default=[m for m in METRICS if SLOPES[m] > 0],
+    display_options,
+    default=preselected,
     help="Choose which metrics you want to use for topping-up."
 )
+selected_metrics = [METRICS[display_options.index(label)] for label in selected_display]
 
 current_contrib = sum(current_inputs[m] * SLOPES[m] for m in METRICS)
 need = target_nm - current_contrib
@@ -314,6 +329,8 @@ for m in valid_metrics:
         "N/m Gain from Top-Up": round(top_up[m] * SLOPES[m], 1),
     })
 results_df = pd.DataFrame(rows, columns=["Metric", "Current", "Top-Up Needed", "New Total", "N/m Gain from Top-Up"])
+if not results_df.empty:
+    results_df["Metric"] = results_df["Metric"].map(display_metric)
 
 c1, c2 = st.columns([2, 1])
 with c1:
@@ -333,8 +350,10 @@ if not valid_metrics:
 else:
     bad = [m for m in selected_metrics if SLOPES[m] <= 0]
     if bad:
-        st.info("These selected metrics have ≤ 0 slopes and were ignored: " + ", ".join(bad))
+        ignored = ", ".join(display_metric(m) for m in bad)
+        st.info("These selected metrics have <= 0 slopes and were ignored: " + ignored)
 
 st.markdown("</div>", unsafe_allow_html=True)
+
 
 

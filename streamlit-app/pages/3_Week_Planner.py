@@ -433,3 +433,4 @@ else:
             display_off_cols.append(col)
     render_html_table(table_df, off_cols=display_off_cols)
     st.caption("Each metric distributes the exemplar total across the selected structure, then scales by the chosen position's ratio. Day percentages always sum to 100%.")
+
